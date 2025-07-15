@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# Build output
+artifacts/
+build/
+dist/
+.cache/
+coverage/
+
+# Hardhat/Truffle/Foundry
+cache/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# Misc
+*.log
+*.pid
+
+# Firebase
+firebase-debug.log
+
+# Public build
+public/*.wasm 
