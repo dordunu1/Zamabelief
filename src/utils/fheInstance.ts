@@ -3,6 +3,11 @@ import { initSDK, createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/bu
 let fheInstance: any = null;
 
 export async function initializeFheInstance() {
+  // Check if ethereum is available (prevents mobile crashes)
+  if (typeof window === 'undefined' || !window.ethereum) {
+    throw new Error('Ethereum provider not found. Please install MetaMask or connect a wallet.');
+  }
+
   await initSDK(); // Loads WASM
   const config = { ...SepoliaConfig, network: window.ethereum };
   try {

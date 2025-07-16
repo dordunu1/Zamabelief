@@ -1,4 +1,4 @@
-import { getFheInstance } from '../utils/fheInstance';
+import { getFheInstance, initializeFheInstance } from '../utils/fheInstance';
 import { ethers } from 'ethers';
 import { getAddress, hexlify } from 'ethers/lib/utils';
 
@@ -25,8 +25,15 @@ export function useCastVote() {
     onCastVote?: (voteType: number, amount: number) => void;
   }) => {
     try {
-      const fhe = getFheInstance();
-      if (!fhe) throw new Error('FHE instance not initialized');
+      // Initialize FHEVM if not already initialized
+      let fhe = getFheInstance();
+      if (!fhe) {
+        console.log('Initializing FHEVM for voting...');
+        if (setVoteStep) setVoteStep('initializing');
+        fhe = await initializeFheInstance();
+        if (setVoteStep) setVoteStep('ready');
+      }
+      if (!fhe) throw new Error('Failed to initialize FHE instance');
 
       const contractAddressChecksum = getAddress(contractAddress) as `0x${string}`;
       const userAddress = await signer.getAddress();

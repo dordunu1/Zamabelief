@@ -1,5 +1,5 @@
 // NOTE: Make sure to install react-router-dom with: npm install react-router-dom
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Modal, type ModalData } from './components/Modal';
 import { ethers } from 'ethers';
 import LandingHero from './components/LandingHero';
@@ -12,14 +12,53 @@ import ActivityFeed from './components/ActivityFeed';
 import Leaderboard from './components/Leaderboard';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, } from 'wagmi';
-import { initializeFheInstance } from './utils/fheInstance';
+
+// Simple error boundary component
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('App crashed:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <div className="text-center">
+            <h1 className="text-xl font-bold text-red-600 mb-2">Something went wrong</h1>
+            <p className="text-gray-600 mb-4">Please refresh the page or try again later.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-orange-500 text-white px-4 py-2 rounded-lg"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export { ErrorBoundary };
 
 function App() {
   // Remove all custom wallet state/logic
   const { address: userAddress, isConnected } = useAccount();
  
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+  // Remove these lines that cause mobile crashes
+  // const provider = new ethers.providers.Web3Provider(window.ethereum);
+  // const signer = provider.getSigner();
  
   const [modalData, setModalData] = useState<ModalData | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -28,11 +67,18 @@ function App() {
   const [error, setError] = useState<string>('');
   const { createMarket } = useCreateMarket();
 
-  useEffect(() => {
-    initializeFheInstance()
-      .then((fhe) => console.log('FHEVM initialized:', fhe))
-      .catch((err) => console.error('FHEVM init failed:', err));
-  }, []);
+  // Initialize provider and signer only when needed
+  const getProvider = () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      return new ethers.providers.Web3Provider(window.ethereum);
+    }
+    return null;
+  };
+
+  const getSigner = () => {
+    const provider = getProvider();
+    return provider ? provider.getSigner() : null;
+  };
 
   
   const checkWalletSession = async () => {
@@ -84,7 +130,7 @@ function App() {
               <MarketList
                 userAddress={userAddress || ''}
                 address={userAddress || ''}
-                signer={signer}
+                signer={getSigner()}
               />
             </>
           } />
@@ -144,7 +190,7 @@ function App() {
             setShowLanding(false);
           }}
           address={userAddress || ''}
-          signer={signer}
+          signer={getSigner()}
         />
         {error && (
           <div className="text-red-600 text-sm text-center">{error}</div>

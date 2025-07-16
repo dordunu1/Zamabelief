@@ -91,6 +91,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const [claimSuccess, setClaimSuccess] = useState(false);
   const { castConfidentialVote } = useCastVote();
   const [error, setError] = useState<string | null>(null);
+  const [voteStep, setVoteStep] = useState<string>('ready');
 
   // On-chain vote state
 
@@ -525,7 +526,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
               </button>
             ) : (
               <button
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition cursor-pointer text-lg disabled:opacity-60 mb-2"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition cursor-pointer text-lg disabled:opacity-60 mb-2"
                 style={{ boxShadow: '0 2px 12px 0 #2de3b680', marginBottom: 0 }}
                 disabled={!selectedOption || !!userVote || votePending}
                 onClick={async () => {
@@ -544,7 +545,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                         voteType: selectedOption === 'yes' ? 1 : 0,
                         voteStake: ethers.utils.parseEther(market.minBet.toString()).toString(),
                         signer,
-                        setVoteStep: undefined, // or your UI step handler
+                        setVoteStep, // Pass the step handler
                         onCastVote: () => {
                           setVoteSuccess(true);
                           setVoteModalOpen(false);
@@ -558,7 +559,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                   }
                 }}
               >
-                {votePending ? 'Voting...' : userVote ? ' voted' : 'Vote'}
+                {votePending ? (voteStep === 'initializing' ? 'Initializing...' : 'Voting...') : userVote ? ' voted' : 'Vote'}
               </button>
             )}
             <div className="mt-4 text-xs text-gray-500 text-center">
