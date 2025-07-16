@@ -23,15 +23,11 @@ import { initializeFheInstance } from './utils/fheInstance';
 function App() {
   // Remove all custom wallet state/logic
   const { address: userAddress, isConnected } = useAccount();
-  // Remove walletClient usage for signer
-  // const { data: walletClient } = useWalletClient();
-  // const signer = walletClient;
-  // Use ethers.js Web3Provider and getSigner()
+ 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   const { disconnect } = useDisconnect();
-  // For contract interactions, use walletClient directly or pass to viem/ethers as needed
-  // const signer = walletClient; // Pass walletClient as signer prop for now
+ 
   const [modalData, setModalData] = useState<ModalData | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const location = useLocation();
@@ -45,9 +41,7 @@ function App() {
       .catch((err) => console.error('FHEVM init failed:', err));
   }, []);
 
-  // Remove all providerRef, signerRef, isConnecting, handleConnect, etc.
-
-  // Helper to check if wallet session is still valid
+  
   const checkWalletSession = async () => {
     return isConnected && !!userAddress;
   };

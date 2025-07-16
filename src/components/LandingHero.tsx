@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUsers, FaVoteYea, FaCheckCircle, FaComments, FaGavel, FaChartBar, FaShieldAlt } from 'react-icons/fa';
+import { FaUsers, FaVoteYea, FaCheckCircle, FaComments, FaGavel, FaChartBar, FaShieldAlt, FaLock } from 'react-icons/fa';
 
 const chatMessages = [
   {
@@ -117,70 +117,131 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
           </button>
         </div>
         {/* Chat Bubble Conversation */}
-        <div className="w-full max-w-xl mb-10 flex flex-col gap-3">
+        <div className="w-full max-w-3xl mb-10 flex flex-col gap-3">
           {chatMessages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.align === 'right' ? 'justify-end' : 'justify-start'}`}
+              className={`flex w-full ${msg.align === 'right' ? 'justify-end' : 'justify-start'} items-center`}
             >
               {msg.align === 'left' && (
-                <span className="mr-2 text-2xl select-none">{msg.avatar}</span>
+                <>
+                  <span className="text-2xl select-none">{msg.avatar}</span>
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center ml-2 self-start w-fit`}
+                    style={{ borderTopLeftRadius: '0.5rem', borderTopRightRadius: '2rem' }}
+                  >
+                    {msg.text}
+                  </div>
+                </>
               )}
-              <div
-                className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center`}
-                style={{ borderTopLeftRadius: msg.align === 'left' ? '0.5rem' : '2rem', borderTopRightRadius: msg.align === 'right' ? '0.5rem' : '2rem' }}
-              >
-                {msg.text}
-              </div>
               {msg.align === 'right' && (
-                <span className="ml-2 text-2xl select-none">{msg.avatar}</span>
+                <>
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center mr-2 self-end w-fit`}
+                    style={{ borderTopLeftRadius: '2rem', borderTopRightRadius: '0.5rem' }}
+                  >
+                    {msg.text}
+                  </div>
+                  <span className="text-2xl select-none">{msg.avatar}</span>
+                </>
               )}
             </div>
           ))}
         </div>
         {/* L2s vs L1s Chat Section */}
-        <div className="w-full max-w-xl mb-10 flex flex-col gap-3">
+        <div className="w-full max-w-3xl mb-10 flex flex-col gap-3">
           {l2Chat.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.align === 'right' ? 'justify-end' : 'justify-start'}`}
+              className={`flex w-full ${msg.align === 'right' ? 'justify-end' : 'justify-start'} items-center`}
             >
               {msg.align === 'left' && (
-                <span className="mr-2 text-2xl select-none">{msg.avatar}</span>
+                <>
+                  <span className="text-2xl select-none">{msg.avatar}</span>
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center ml-2 self-start w-fit`}
+                    style={{ borderTopLeftRadius: '0.5rem', borderTopRightRadius: '2rem' }}
+                  >
+                    {msg.text}
+                  </div>
+                </>
               )}
-              <div
-                className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center`}
-                style={{ borderTopLeftRadius: msg.align === 'left' ? '0.5rem' : '2rem', borderTopRightRadius: msg.align === 'right' ? '0.5rem' : '2rem' }}
-          >
-                {msg.text}
-              </div>
               {msg.align === 'right' && (
-                <span className="ml-2 text-2xl select-none">{msg.avatar}</span>
+                <>
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center mr-2 self-end w-fit`}
+                    style={{ borderTopLeftRadius: '2rem', borderTopRightRadius: '0.5rem' }}
+                  >
+                    {msg.text}
+                  </div>
+                  <span className="text-2xl select-none">{msg.avatar}</span>
+                </>
               )}
             </div>
           ))}
         </div>
         {/* Sports Chat Section */}
-        <div className="w-full max-w-xl mb-10 flex flex-col gap-3">
+        <div className="w-full max-w-3xl mb-10 flex flex-col gap-3">
           {sportsChat.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.align === 'right' ? 'justify-end' : 'justify-start'}`}
+              className={`flex w-full ${msg.align === 'right' ? 'justify-end' : 'justify-start'} items-center`}
             >
               {msg.align === 'left' && (
-                <span className="mr-2 text-2xl select-none">{msg.avatar}</span>
+                <>
+                  <span className="text-2xl select-none">{msg.avatar}</span>
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center ml-2 self-start w-fit`}
+                    style={{ borderTopLeftRadius: '0.5rem', borderTopRightRadius: '2rem' }}
+                  >
+                    {msg.text}
+                  </div>
+                </>
               )}
-              <div
-                className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center`}
-                style={{ borderTopLeftRadius: msg.align === 'left' ? '0.5rem' : '2rem', borderTopRightRadius: msg.align === 'right' ? '0.5rem' : '2rem' }}
-          >
-                {msg.text}
-              </div>
               {msg.align === 'right' && (
-                <span className="ml-2 text-2xl select-none">{msg.avatar}</span>
+                <>
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center mr-2 self-end w-fit`}
+                    style={{ borderTopLeftRadius: '2rem', borderTopRightRadius: '0.5rem' }}
+                  >
+                    {msg.text}
+                  </div>
+                  <span className="text-2xl select-none">{msg.avatar}</span>
+                </>
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* FHEVM & ZAMA Highlight Section as horizontal cards */}
+      <section className="w-full max-w-5xl mx-auto mt-8 mb-8 flex flex-col items-center">
+        <div className="flex items-center gap-2 mb-6">
+          <span className="bg-orange-100 text-orange-500 font-bold px-3 py-1 rounded-full text-xs tracking-wide shadow">
+            Powered by ZAMA FHEVM
+          </span>
+        </div>
+        <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+            <FaLock className="text-orange-400 mb-2" size={32} />
+            <h4 className="font-bold text-orange-500 mb-1 text-center">Encrypted Voting</h4>
+            <p className="text-sm text-orange-500 text-center">Your vote is <b>encrypted</b> in your browser using ZAMA FHEVM.</p>
+          </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+            <FaShieldAlt className="text-orange-400 mb-2" size={32} />
+            <h4 className="font-bold text-orange-500 mb-1 text-center">On-Chain Privacy</h4>
+            <p className="text-sm text-orange-500 text-center">Encrypted votes are sent to the blockchain—no one (not even us) can see your choice.</p>
+          </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+            <FaGavel className="text-orange-400 mb-2" size={32} />
+            <h4 className="font-bold text-orange-500 mb-1 text-center">Verifiable Results</h4>
+            <p className="text-sm text-orange-500 text-center">After the market closes, the contract decrypts the tally and distributes rewards, all on-chain.</p>
+          </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+            <FaCheckCircle className="text-orange-400 mb-2" size={32} />
+            <h4 className="font-bold text-orange-500 mb-1 text-center">Guaranteed Fairness</h4>
+            <p className="text-sm text-orange-500 text-center">Privacy and fairness are mathematically guaranteed.</p>
+          </div>
         </div>
       </section>
       {/* About/Features Section */}
