@@ -91,7 +91,7 @@ const GlowBg = () => (
 const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = ({ onCreate, onBrowse }) => {
   return (
     <>
-      <section className="relative w-full min-h-[70vh] flex flex-col items-center justify-center bg-gradient-to-br from-mint-200 via-white to-orange-100 py-20 px-4 rounded-lg shadow-2xl mt-8 overflow-hidden">
+      <section className="relative w-full min-h-[70vh] flex flex-col items-center justify-center bg-gradient-to-br from-mint-200 via-white to-orange-100 py-20 px-4 rounded-lg shadow-2xl mt-8 overflow-hidden overflow-x-hidden">
         <GlowBg />
         <h1 className="text-4xl md:text-5xl font-extrabold text-mint-700 mb-4 text-center drop-shadow-sm">
           Welcome to Conviction Markets
@@ -221,26 +221,28 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
             Powered by ZAMA FHEVM
           </span>
         </div>
-        <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
-            <FaLock className="text-orange-400 mb-2" size={32} />
-            <h4 className="font-bold text-orange-500 mb-1 text-center">Encrypted Voting</h4>
-            <p className="text-sm text-orange-500 text-center">Your vote is <b>encrypted</b> in your browser using ZAMA FHEVM.</p>
-          </div>
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
-            <FaShieldAlt className="text-orange-400 mb-2" size={32} />
-            <h4 className="font-bold text-orange-500 mb-1 text-center">On-Chain Privacy</h4>
-            <p className="text-sm text-orange-500 text-center">Encrypted votes are sent to the blockchain—no one (not even us) can see your choice.</p>
-          </div>
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
-            <FaGavel className="text-orange-400 mb-2" size={32} />
-            <h4 className="font-bold text-orange-500 mb-1 text-center">Verifiable Results</h4>
-            <p className="text-sm text-orange-500 text-center">After the market closes, the contract decrypts the tally and distributes rewards, all on-chain.</p>
-          </div>
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
-            <FaCheckCircle className="text-orange-400 mb-2" size={32} />
-            <h4 className="font-bold text-orange-500 mb-1 text-center">Guaranteed Fairness</h4>
-            <p className="text-sm text-orange-500 text-center">Privacy and fairness are mathematically guaranteed.</p>
+        <div className="w-full overflow-x-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-w-[320px]">
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+              <FaLock className="text-orange-400 mb-2" size={32} />
+              <h4 className="font-bold text-orange-500 mb-1 text-center">Encrypted Voting</h4>
+              <p className="text-sm text-orange-500 text-center">Your vote is <b>encrypted</b> in your browser using ZAMA FHEVM.</p>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+              <FaShieldAlt className="text-orange-400 mb-2" size={32} />
+              <h4 className="font-bold text-orange-500 mb-1 text-center">On-Chain Privacy</h4>
+              <p className="text-sm text-orange-500 text-center">Encrypted votes are sent to the blockchain—no one (not even us) can see your choice.</p>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+              <FaGavel className="text-orange-400 mb-2" size={32} />
+              <h4 className="font-bold text-orange-500 mb-1 text-center">Verifiable Results</h4>
+              <p className="text-sm text-orange-500 text-center">After the market closes, the contract decrypts the tally and distributes rewards, all on-chain.</p>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
+              <FaCheckCircle className="text-orange-400 mb-2" size={32} />
+              <h4 className="font-bold text-orange-500 mb-1 text-center">Guaranteed Fairness</h4>
+              <p className="text-sm text-orange-500 text-center">Privacy and fairness are mathematically guaranteed.</p>
+            </div>
           </div>
         </div>
       </section>

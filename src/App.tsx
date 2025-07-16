@@ -1,23 +1,17 @@
 // NOTE: Make sure to install react-router-dom with: npm install react-router-dom
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, type ModalData } from './components/Modal';
 import { ethers } from 'ethers';
-// Remove or comment out contract address usage until deployment
-// import Config from './config';
-// const contractAddress = import.meta.env.VITE_BELIEF_MARKET_ADDRESS;
-// ... pass contractAddress as prop or use in contract instantiation only after deployment
-// ... existing code ...
-// In CreateMarketModal and other components, do not pass or use contractAddress for now
 import LandingHero from './components/LandingHero';
 import CreateMarketModal from './components/CreateMarketModal';
 import MarketList from './components/MarketList';
 import { FaGavel, FaChartBar, FaBolt, FaMedal } from 'react-icons/fa';
 import { useCreateMarket } from './hooks/useCreateMarket';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import ActivityFeed from './components/ActivityFeed';
 import Leaderboard from './components/Leaderboard';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useDisconnect, useWalletClient } from 'wagmi';
+import { useAccount, } from 'wagmi';
 import { initializeFheInstance } from './utils/fheInstance';
 
 function App() {
@@ -26,7 +20,6 @@ function App() {
  
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
-  const { disconnect } = useDisconnect();
  
   const [modalData, setModalData] = useState<ModalData | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -116,7 +109,7 @@ function App() {
         </div>
       </header>
       {/* Add padding top to main content to avoid overlap with fixed header */}
-      <div className="flex flex-col items-center min-h-screen w-screen bg-gray-50 p-2 sm:p-4 pt-16 sm:pt-20">
+      <div className="flex flex-col items-center min-h-screen w-full bg-gray-50 p-2 sm:p-4 pt-16 sm:pt-20 overflow-x-hidden">
         {showLanding ? (
           <LandingHero
             onCreate={async () => {

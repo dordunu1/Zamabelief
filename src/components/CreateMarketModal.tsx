@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ethers } from "ethers";
-import BeliefMarketABI from '../../artifacts/contracts/BeliefMarket.sol/BeliefMarketFHE.json';
+import BeliefMarketABI from '../abi/BeliefMarketFHE.json';
 // import { useBeliefMarketContract } from "../hooks/useBeliefMarketContract";
 // import { useIncentivWallet } from "incentiv-sdk"; // Uncomment and use actual SDK
 
@@ -26,6 +26,23 @@ const CONTRACT_ADDRESS = import.meta.env.VITE_BELIEF_MARKET_ADDRESS;
 
 const countNonSpace = (str: string) => str.replace(/\s/g, '').length;
 
+function getFriendlyErrorMessage(error: any) {
+  if (!error) return "Something went wrong. Please try again.";
+  if (error.code === 4001 || error.code === "ACTION_REJECTED") {
+    return "Transaction was cancelled. No changes were made.";
+  }
+  if (typeof error.message === "string" && error.message.toLowerCase().includes("user denied")) {
+    return "Transaction was cancelled. No changes were made.";
+  }
+  if (error.error && typeof error.error.message === "string" && error.error.message.toLowerCase().includes("user denied")) {
+    return "Transaction was cancelled. No changes were made.";
+  }
+  if (typeof error.message === "string") {
+    return error.message.split('\n')[0].slice(0, 200);
+  }
+  return "Something went wrong. Please try again.";
+}
+
 // Update props interface
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -38,12 +55,12 @@ interface CreateMarketModalProps {
   walletError?: string;
 }
 
-const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onSubmit, address, signer, connect = () => {}, connecting = false, walletError }) => {
+const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onSubmit, address, connect = () => {}, connecting = false, walletError }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [expiry, setExpiry] = useState(EXPIRY_OPTIONS[0].value);
   const [minBet, setMinBet] = useState(50);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -109,7 +126,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
       setMinBet(50);
       setError('');
     } catch (err: any) {
-      setError(err.message || 'Failed to create market');
+      setError(getFriendlyErrorMessage(err));
     }
     setSubmitting(false);
   };
@@ -232,7 +249,9 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             </div>
           </div>
         </div>
-        {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
+        {error && (
+          <div className="text-red-600 text-sm text-center mt-2">{error}</div>
+        )}
         <button
           type="submit"
           disabled={submitting || !isFormValid}

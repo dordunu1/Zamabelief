@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaShareAlt, FaUsers, FaCoins, FaClock, FaComments, FaCheckCircle } from 'react-icons/fa';
 import type { ConvictionMarket, ConvictionVote } from '../types/market';
-import { useVote } from '../hooks/useVote';
 import CommentModal from './CommentModal';
 import { useBeliefMarketContract } from "../hooks/useBeliefMarketContract";
 import { ethers, BigNumber } from "ethers";
@@ -47,6 +46,23 @@ function formatEthFromWei(weiValue: number | string): string {
   return parseFloat(ethValue).toFixed(4); // Show 4 decimal places
 }
 
+function getFriendlyErrorMessage(error: any) {
+  if (!error) return "Something went wrong. Please try again.";
+  if (error.code === 4001 || error.code === "ACTION_REJECTED") {
+    return "Transaction was cancelled. No changes were made.";
+  }
+  if (typeof error.message === "string" && error.message.toLowerCase().includes("user denied")) {
+    return "Transaction was cancelled. No changes were made.";
+  }
+  if (error.error && typeof error.error.message === "string" && error.error.message.toLowerCase().includes("user denied")) {
+    return "Transaction was cancelled. No changes were made.";
+  }
+  if (typeof error.message === "string") {
+    return error.message.split('\n')[0].slice(0, 200);
+  }
+  return "Something went wrong. Please try again.";
+}
+
 export interface MarketCardProps {
   market: ConvictionMarket;
   votes: ConvictionVote[];
@@ -66,9 +82,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const [expanded, setExpanded] = useState(false);
   const [voteModalOpen, setVoteModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<'yes' | 'no' | ''>('');
-  const { vote } = useVote();
   const [showClaimModal, setShowClaimModal] = useState(false);
-  const [claimState, setClaimState] = useState<'idle' | 'claiming' | 'claimed'>('idle');
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const contract = useBeliefMarketContract(signer);
   const [voteSuccess, setVoteSuccess] = useState(false);
@@ -76,12 +90,9 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimSuccess, setClaimSuccess] = useState(false);
   const { castConfidentialVote } = useCastVote();
+  const [error, setError] = useState<string | null>(null);
 
   // On-chain vote state
-  const [onChainYes, setOnChainYes] = useState<number>(0);
-  const [onChainNo, setOnChainNo] = useState<number>(0);
-  const [onChainYesPct, setOnChainYesPct] = useState<number>(0);
-  const [onChainNoPct, setOnChainNoPct] = useState<number>(0);
 
   // On-chain resolved tallies
   const [resolvedYes, setResolvedYes] = useState<number | null>(null);
@@ -117,16 +128,9 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
         const betInfo = await contract.getBetInfo(market.betId);
         const yes = Number(betInfo.totalYesVotes);
         const no = Number(betInfo.totalNoVotes);
-        const total = yes + no;
-        setOnChainYes(yes);
-        setOnChainNo(no);
-        setOnChainYesPct(total ? Math.round((yes / total) * 100) : 0);
-        setOnChainNoPct(total ? 100 - Math.round((yes / total) * 100) : 0);
+        setResolvedYes(yes);
+        setResolvedNo(no);
       } catch (err) {
-        setOnChainYes(0);
-        setOnChainNo(0);
-        setOnChainYesPct(0);
-        setOnChainNoPct(0);
       }
     };
     fetchOnChainVotes();
@@ -197,8 +201,8 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
       }
       setShowClaimModal(false);
       // Optionally show a success message
-    } catch (err) {
-      // Optionally show an error message
+    } catch (err: any) {
+      setError(getFriendlyErrorMessage(err));
     }
     setClaiming(false);
   };
@@ -213,8 +217,8 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
       }
       setShowClaimModal(false);
       // Optionally show a success message
-    } catch (err) {
-      // Optionally show an error message
+    } catch (err: any) {
+      setError(getFriendlyErrorMessage(err));
     }
     setClaiming(false);
   };
@@ -406,9 +410,8 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                   const { doc, updateDoc } = await import('firebase/firestore');
                   await updateDoc(doc(db, 'markets', market.id), { status: 'resolved' });
                 }
-              } catch (err) {
-                // Optionally, show error
-                console.error(err);
+              } catch (err: any) {
+                setError(getFriendlyErrorMessage(err));
               }
               setVotePending(false);
             }}
@@ -462,6 +465,9 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
           <FaComments className="text-orange-500" />
         </button>
       </div>
+      {error && (
+        <div className="text-red-600 text-sm text-center mt-2">{error}</div>
+      )}
     </div>
   );
 
@@ -545,9 +551,8 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                           setSelectedOption("");
                         }
                       });
-                    } catch (err: unknown) {
-                      const error = err as Error;
-                      console.error(error.message || "Failed to vote");
+                    } catch (err: any) {
+                      setError(getFriendlyErrorMessage(err));
                     }
                     setVotePending(false);
                   }
@@ -611,7 +616,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
             <div className="text-gray-600 text-center mb-6">Your rewards have been withdrawn. They will appear in your wallet soon.</div>
             <button
               className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow text-lg"
-              onClick={() => { setClaimSuccess(false); setShowClaimModal(false); setClaimState('idle'); }}
+              onClick={() => { setClaimSuccess(false); setShowClaimModal(false); }}
             >
               Close
             </button>
