@@ -3,6 +3,7 @@ import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { ConvictionVote } from '../types/market';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ethers } from 'ethers';
 
 function getDiceBearUrl(address: string) {
   return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${address}`;
@@ -127,7 +128,7 @@ const ActivityFeed: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <div className="font-semibold">
-                    <span className="text-mint-600 font-bold">{g.users.length} users</span> placed a bet of <span className="text-orange-500 font-bold">{g.amount} TCENT</span> on <span className={g.option === 'yes' ? 'text-mint-600' : 'text-orange-600'}>{g.option.toUpperCase()}</span>
+                    <span className="text-mint-600 font-bold">{g.users.length} users</span> placed a bet of <span className="text-orange-500 font-bold">{ethers.utils.formatEther(g.amount.toString())} ETH</span>
                   </div>
                   <div className="text-xs text-gray-500 mt-1">{timeAgo(g.createdAt)}</div>
                 </div>

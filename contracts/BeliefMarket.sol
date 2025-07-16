@@ -29,9 +29,10 @@ contract BeliefMarketFHE is SepoliaConfig {
     mapping(string => mapping(address => bool)) public hasVoted;
     mapping(string => bool) public callbackHasBeenCalled;
     mapping(uint256 => string) internal betIdByRequestId;
-    mapping(address => uint256) public pendingWithdrawals;
     uint256 public platformFees;
     address public owner;
+    mapping(string => mapping(address => uint8)) internal userVoteType; // 0 = No, 1 = Yes
+    mapping(string => mapping(address => bool)) internal hasClaimed;
 
     event BetCreated(string betId, address creator, uint256 stakeAmount, uint256 voteStake, uint256 expiryTime);
     event VoteCast(string betId);
@@ -119,6 +120,7 @@ contract BeliefMarketFHE is SepoliaConfig {
         FHE.allowThis(bet.noVotes);
 
         hasVoted[betId][msg.sender] = true;
+        userVoteType[betId][msg.sender] = voteType;
         bet.prizePool += msg.value;
         emit VoteCast(betId);
     }
@@ -162,27 +164,38 @@ contract BeliefMarketFHE is SepoliaConfig {
         emit BetResolved(betId, bet.yesWon, revealedYes, revealedNo, bet.prizePool);
     }
 
-    // Distribute prizes to all winners (to be called after reveal)
-    function distributePrizes(string memory betId, address[] calldata winners) external {
+    function claimPrize(string memory betId) external {
         BetInfo storage bet = bets[betId];
-        require(bet.isResolved, "Not resolved");
-        require(bet.prizePool > 0, "No prize pool");
-        require(winners.length > 0, "No winners");
-        uint256 prizePerWinner = bet.prizePool / winners.length;
-        for (uint i = 0; i < winners.length; i++) {
-            pendingWithdrawals[winners[i]] += prizePerWinner;
-            emit PrizeDistributed(betId, winners[i], prizePerWinner);
-        }
-        bet.prizePool = 0;
+        require(bet.isResolved, "Bet not resolved");
+        require(!hasClaimed[betId][msg.sender], "Already claimed");
+        require(hasVoted[betId][msg.sender], "Did not vote");
+        require(bet.revealedYes != bet.revealedNo, "Tie, use claimRefund");
+
+        bool isWinner = (bet.yesWon && userVoteType[betId][msg.sender] == 1) ||
+                        (!bet.yesWon && userVoteType[betId][msg.sender] == 0);
+        require(isWinner, "Not a winner");
+
+        hasClaimed[betId][msg.sender] = true;
+        uint256 userWeight = bet.voteStake; // all users vote with the same stake
+        uint256 totalWinningWeight = bet.yesWon ? bet.revealedYes : bet.revealedNo;
+        require(totalWinningWeight > 0, "No winners");
+        uint256 prize = (bet.prizePool * userWeight) / totalWinningWeight;
+        (bool sent, ) = payable(msg.sender).call{value: prize}("");
+        require(sent, "Failed to send Ether");
+        emit PrizeDistributed(betId, msg.sender, prize);
     }
 
-    function withdraw() external {
-        uint256 amount = pendingWithdrawals[msg.sender];
-        require(amount > 0, "No funds to withdraw");
-        pendingWithdrawals[msg.sender] = 0;
-        (bool sent, ) = payable(msg.sender).call{value: amount}("");
-        require(sent, "Withdraw failed");
-        emit WithdrawalPending(msg.sender, amount);
+    function claimRefund(string memory betId) external {
+        BetInfo storage bet = bets[betId];
+        require(bet.isResolved, "Bet not resolved");
+        require(bet.revealedYes == bet.revealedNo, "Not a tie");
+        require(hasVoted[betId][msg.sender], "Did not vote");
+        require(!hasClaimed[betId][msg.sender], "Already claimed");
+
+        hasClaimed[betId][msg.sender] = true;
+        uint256 refund = bet.voteStake;
+        (bool sent, ) = payable(msg.sender).call{value: refund}("");
+        require(sent, "Failed to send Ether");
     }
 
     // Get bet info (returns revealed tallies if resolved, otherwise 0)
@@ -240,6 +253,11 @@ contract BeliefMarketFHE is SepoliaConfig {
     // Check if callback has been called for a bet
     function isCallbackCalled(string memory betId) external view returns (bool) {
         return callbackHasBeenCalled[betId];
+    }
+
+    // Public getter for hasClaimed for frontend usage
+    function hasUserClaimed(string memory betId, address user) public view returns (bool) {
+        return hasClaimed[betId][user];
     }
 
     receive() external payable {}

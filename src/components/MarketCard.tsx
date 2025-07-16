@@ -4,7 +4,7 @@ import type { ConvictionMarket, ConvictionVote } from '../types/market';
 import { useVote } from '../hooks/useVote';
 import CommentModal from './CommentModal';
 import { useBeliefMarketContract } from "../hooks/useBeliefMarketContract";
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 import { useCastVote } from '../hooks/useCastVote';
 import BeliefMarketABI from '../abi/BeliefMarketFHE.json';
 // import { useIncentivWallet } from "incentiv-sdk"; // Uncomment and use actual SDK
@@ -73,7 +73,6 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const contract = useBeliefMarketContract(signer);
   const [voteSuccess, setVoteSuccess] = useState(false);
   const [votePending, setVotePending] = useState(false);
-  const [claimAmount, setClaimAmount] = useState<number | null>(null);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimSuccess, setClaimSuccess] = useState(false);
   const { castConfidentialVote } = useCastVote();
@@ -83,11 +82,6 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const [onChainNo, setOnChainNo] = useState<number>(0);
   const [onChainYesPct, setOnChainYesPct] = useState<number>(0);
   const [onChainNoPct, setOnChainNoPct] = useState<number>(0);
-
-  // On-chain claim eligibility
-  const [canClaimOnChain, setCanClaimOnChain] = useState(false);
-  // Track which side won
-  const [yesWon, setYesWon] = useState<boolean | null>(null);
 
   // On-chain resolved tallies
   const [resolvedYes, setResolvedYes] = useState<number | null>(null);
@@ -100,6 +94,21 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const isResolved = market.status === 'resolved';
   const isExpired = Date.now() > market.expiresAt;
   const userVote = votes.find(v => v.user === userAddress);
+
+  // Fetch betInfo from contract if not already present
+  const [betInfo, setBetInfo] = useState<any>(null);
+  useEffect(() => {
+    async function fetchBetInfo() {
+      if (!contract || !market.betId) return;
+      try {
+        const info = await contract.getBet(market.betId);
+        setBetInfo(info);
+      } catch (err) {
+        setBetInfo(null);
+      }
+    }
+    fetchBetInfo();
+  }, [contract, market.betId]);
 
   useEffect(() => {
     const fetchOnChainVotes = async () => {
@@ -142,56 +151,139 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
     fetchResolvedTallies();
   }, [contract, market.betId, market.status]);
 
-  // Fetch claimable amount when claim modal opens
+  // Restore yesWon state and fetching logic (but keep pendingWithdrawals/claimAmount removed)
+  const [yesWon, setYesWon] = useState<boolean | null>(null);
   useEffect(() => {
-    const fetchClaimAmount = async () => {
-      if (!showClaimModal || !contract || !address) {
-        setClaimAmount(null);
-        return;
-      }
-      try {
-        // Check pending withdrawals for the user
-        const pendingAmount = await contract.pendingWithdrawals(address);
-        setClaimAmount(Number(pendingAmount));
-      } catch (err) {
-        setClaimAmount(null);
-      }
-    };
-    fetchClaimAmount();
-  }, [showClaimModal, contract, address]);
-
-  useEffect(() => {
-    const checkClaimEligibility = async () => {
-      if (!contract || !address) {
-        setCanClaimOnChain(false);
+    const fetchYesWon = async () => {
+      if (!contract || !market.betId) {
         setYesWon(null);
         return;
       }
       try {
-        // Check if user has any pending withdrawals
-        const pendingAmount = await contract.pendingWithdrawals(address);
-        setCanClaimOnChain(Number(pendingAmount) > 0);
-        // Fetch yesWon from contract if resolved
-        if (market.status === 'resolved') {
+        if (isResolved) {
           const betInfo = await contract.getBet(market.betId);
           setYesWon(Boolean(betInfo.yesWon));
         } else {
           setYesWon(null);
         }
       } catch (err) {
-        setCanClaimOnChain(false);
         setYesWon(null);
       }
     };
-    checkClaimEligibility();
-  }, [contract, address, showClaimModal, market.status, market.betId]);
+    fetchYesWon();
+  }, [contract, market.betId, isResolved]);
+
+  // Remove claimable amount fetch using pendingWithdrawals
+  // useEffect(() => {
+  //   if (showClaimModal && contract && address) {
+  //     contract.pendingWithdrawals(address).then((amount: any) => {
+  //       setClaimAmount(ethers.utils.formatEther(amount.toString()));
+  //     });
+  //   }
+  // }, [showClaimModal, contract, address]);
+
+  // Remove canClaimOnChain and claimAmount state and logic
+
+  const [claiming, setClaiming] = useState(false);
+  const isTie = isResolved && resolvedYes !== null && resolvedNo !== null && resolvedYes === resolvedNo;
+  const handleClaim = async () => {
+    setClaiming(true);
+    try {
+      await contract.claimPrize(market.betId);
+      // Refresh hasClaimed status
+      if (contract && market.betId && address) {
+        const claimed = await contract.hasUserClaimed(market.betId, address);
+        setHasClaimed(claimed);
+      }
+      setShowClaimModal(false);
+      // Optionally show a success message
+    } catch (err) {
+      // Optionally show an error message
+    }
+    setClaiming(false);
+  };
+  const handleRefund = async () => {
+    setClaiming(true);
+    try {
+      await contract.claimRefund(market.betId);
+      // Refresh hasClaimed status
+      if (contract && market.betId && address) {
+        const claimed = await contract.hasUserClaimed(market.betId, address);
+        setHasClaimed(claimed);
+      }
+      setShowClaimModal(false);
+      // Optionally show a success message
+    } catch (err) {
+      // Optionally show an error message
+    }
+    setClaiming(false);
+  };
+
+  // Restore and use hasClaimed state
+  const [hasClaimed, setHasClaimed] = useState(false);
+  useEffect(() => {
+    async function fetchHasClaimed() {
+      if (!contract || !market.betId || !address) return;
+      try {
+        const claimed = await contract.hasUserClaimed(market.betId, address);
+        setHasClaimed(claimed);
+      } catch (err) {
+        setHasClaimed(false);
+      }
+    }
+    fetchHasClaimed();
+  }, [contract, market.betId, address, showClaimModal]);
+
+  // Make sure betInfo is defined before calculating eligibleAmount
+  let eligibleAmount = "0.0";
+  if (betInfo) {
+    if (
+      isResolved &&
+      !isTie &&
+      userVote &&
+      ((yesWon === true && userVote.option === 'yes') || (yesWon === false && userVote.option === 'no'))
+    ) {
+      // Winner - use new contract logic
+      const userWeight = BigNumber.from(betInfo.voteStake ? betInfo.voteStake : 0);
+      const totalWinningWeight = yesWon ? BigNumber.from(betInfo.yesVotes) : BigNumber.from(betInfo.noVotes);
+      const prizePool = BigNumber.from(betInfo.prizePool ? betInfo.prizePool : 0);
+      eligibleAmount = (totalWinningWeight.gt(0))
+        ? ethers.utils.formatEther(prizePool.mul(userWeight).div(totalWinningWeight))
+        : "0.0";
+    } else if (isResolved && isTie && userVote) {
+      // Tie refund
+      const voteStake = BigNumber.from(betInfo.voteStake ? betInfo.voteStake : 0);
+      eligibleAmount = ethers.utils.formatEther(voteStake);
+    }
+  }
+
+  // Remove debug log for claim button visibility
 
   // Card content
   const cardContent = (
     <div className="relative bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-mint-100 hover:shadow-2xl transition-all p-0 overflow-hidden w-full max-w-2xl mx-auto">
       {/* Status badge */}
-      <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold" style={{ background: market.status === 'active' ? '#2de3b6' : market.status === 'resolved' ? '#ff7a1a' : '#e5e7eb', color: market.status === 'active' || market.status === 'resolved' ? 'white' : '#6b7280', boxShadow: market.status === 'active' ? '0 2px 8px 0 #2de3b680' : undefined }}>
-        {market.status.toUpperCase()}
+      <div
+        className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold"
+        style={{
+          background:
+            isResolved
+              ? '#ff7a1a'
+              : isExpired
+              ? '#e5e7eb'
+              : '#2de3b6',
+          color:
+            isResolved || !isExpired
+              ? 'white'
+              : '#6b7280',
+          boxShadow: !isExpired && !isResolved ? '0 2px 8px 0 #2de3b680' : undefined,
+        }}
+      >
+        {isResolved
+          ? 'RESOLVED'
+          : isExpired
+          ? 'RESOLVING'
+          : 'ACTIVE'}
       </div>
       {/* Card header */}
       <div className="px-6 pt-6 pb-2 flex flex-col gap-1">
@@ -328,26 +420,27 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
             className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition bg-gray-200 text-gray-400 cursor-not-allowed"
             disabled
           >
-            Only creator can resolve
-          </button>
-        ) : isResolved && canClaimOnChain && userVote ? (
-          // Show claim if user has pending withdrawals and user voted for the winning side
-          ((yesWon === true && userVote.option === 'yes') || (yesWon === false && userVote.option === 'no')) ? (
-            <button
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
-              onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
-            >
-              Claim
-            </button>
-          ) : null
-        ) : isResolved && !canClaimOnChain ? (
-          <button
-            className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition bg-gray-300 text-gray-500 cursor-not-allowed"
-            disabled
-          >
-            Closed
+            Resolving
           </button>
         ) : null}
+        {isResolved && !isTie && userVote && ((yesWon === true && userVote.option === 'yes') || (yesWon === false && userVote.option === 'no')) && (
+          <button
+            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
+            onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
+            disabled={claiming || hasClaimed}
+          >
+            {hasClaimed ? 'Claimed' : claiming ? 'Claiming...' : 'Claim'}
+          </button>
+        )}
+        {isResolved && isTie && userVote && (
+          <button
+            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
+            onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
+            disabled={claiming || hasClaimed}
+          >
+            {hasClaimed ? 'Claimed' : claiming ? 'Claiming...' : 'Claim Refund'}
+          </button>
+        )}
         {/* Share and Comments buttons */}
         <button
           className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition cursor-pointer"
@@ -486,81 +579,26 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
       )}
       {/* Claim Modal */}
       {showClaimModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => { setShowClaimModal(false); setClaimState('idle'); }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowClaimModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm relative" onClick={e => e.stopPropagation()}>
-            <button className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => { setShowClaimModal(false); setClaimState('idle'); }}>&times;</button>
-            <h2 className="text-xl font-bold text-mint-700 mb-6 text-center">Withdraw Rewards</h2>
+            <button className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setShowClaimModal(false)}>&times;</button>
+            <h2 className="text-xl font-bold text-mint-700 mb-6 text-center">Claim Rewards</h2>
             <div className="text-center text-lg font-semibold mb-6">
-              {claimAmount === null ? (
-                <span>Loading...</span>
-              ) : claimAmount !== undefined ? (
-                claimAmount > 0 ? (
-                  <>You can withdraw: <span className="text-orange-500">{formatEthFromWei(claimAmount)} ETH</span></>
-                ) : (
-                  <span>No rewards available to withdraw.</span>
-                )
-              ) : (
-                <span>Unable to fetch withdrawable amount.</span>
-              )}
+              You can claim: {eligibleAmount} ETH
             </div>
-            {!address ? (
-              <button
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition cursor-pointer text-lg"
-                onClick={connect}
-                disabled={connecting}
-              >
-                {connecting ? 'Connecting...' : 'Connect Incentiv Wallet'}
-              </button>
-            ) : (
-              <div className="flex gap-4 justify-center mt-4">
-                <button
-                  className={`bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow text-lg transition ${claimAmount === 0 || claimState === 'claiming' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                  disabled={claimAmount === 0 || claimState === 'claiming'}
-                  onClick={async () => {
-                    setClaimState('claiming');
-                    setClaimError(null);
-                    try {
-                      // Detect if signer is IncentivSigner (AA wallet)
-                      // TODO: Use RainbowKit's signer/account instead
-                      if (signer) {
-                        // Encode withdraw call
-                        const iface = new ethers.utils.Interface([
-                          "function withdraw()"
-                        ]);
-                        const data = iface.encodeFunctionData("withdraw", []);
-                        // Send transaction via IncentivSigner (AA wallet)
-                        await signer.sendTransaction({
-                          to: contract.address,
-                          data,
-                          gasLimit: ethers.utils.hexlify(1000000),
-                          gasPrice: ethers.utils.parseUnits('10', 'gwei')
-                        });
-                      } else {
-                        // EOA: call contract directly
-                        await contract.withdraw({
-                          gasLimit: ethers.utils.hexlify(1000000),
-                          gasPrice: ethers.utils.parseUnits('10', 'gwei')
-                        });
-                      }
-                      setClaimState('claimed');
-                      setClaimSuccess(true);
-                    } catch (err: any) {
-                      console.error(err);
-                      setClaimError(err.message || "Failed to withdraw");
-                      setClaimState('idle');
-                    }
-                  }}
-                >
-                  {claimState === 'claiming' ? 'Withdrawing...' : 'Withdraw'}
-                </button>
-                <button
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg shadow text-lg transition"
-                  onClick={() => { setShowClaimModal(false); setClaimState('idle'); }}
-                >
-                  Close
-                </button>
-              </div>
-            )}
+            <button
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition cursor-pointer text-lg disabled:opacity-60 mb-2"
+              disabled={claiming}
+              onClick={async () => {
+                if (isTie) {
+                  await handleRefund();
+                } else {
+                  await handleClaim();
+                }
+              }}
+            >
+              {claiming ? 'Claiming...' : 'Confirm Claim'}
+            </button>
           </div>
         </div>
       )}
