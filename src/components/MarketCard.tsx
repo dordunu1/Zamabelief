@@ -5,6 +5,8 @@ import { useVote } from '../hooks/useVote';
 import CommentModal from './CommentModal';
 import { useBeliefMarketContract } from "../hooks/useBeliefMarketContract";
 import { ethers } from "ethers";
+import { useCastVote } from '../hooks/useCastVote';
+import BeliefMarketABI from '../abi/BeliefMarketFHE.json';
 // import { useIncentivWallet } from "incentiv-sdk"; // Uncomment and use actual SDK
 
 function truncate(str: string, n: number) {
@@ -40,6 +42,11 @@ function linkify(text: string) {
   });
 }
 
+function formatEthFromWei(weiValue: number | string): string {
+  const ethValue = ethers.utils.formatEther(weiValue.toString());
+  return parseFloat(ethValue).toFixed(4); // Show 4 decimal places
+}
+
 export interface MarketCardProps {
   market: ConvictionMarket;
   votes: ConvictionVote[];
@@ -69,6 +76,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
   const [claimAmount, setClaimAmount] = useState<number | null>(null);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const { castConfidentialVote } = useCastVote();
 
   // On-chain vote state
   const [onChainYes, setOnChainYes] = useState<number>(0);
@@ -78,6 +86,12 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
 
   // On-chain claim eligibility
   const [canClaimOnChain, setCanClaimOnChain] = useState(false);
+  // Track which side won
+  const [yesWon, setYesWon] = useState<boolean | null>(null);
+
+  // On-chain resolved tallies
+  const [resolvedYes, setResolvedYes] = useState<number | null>(null);
+  const [resolvedNo, setResolvedNo] = useState<number | null>(null);
 
   // Firestore total stake
   const firestoreTotalStake = votes.reduce((sum, v) => sum + v.amount, 0);
@@ -109,6 +123,25 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
     fetchOnChainVotes();
   }, [contract, market.betId]);
 
+  useEffect(() => {
+    const fetchResolvedTallies = async () => {
+      if (!contract || !market.betId || market.status !== 'resolved') {
+        setResolvedYes(null);
+        setResolvedNo(null);
+        return;
+      }
+      try {
+        const betInfo = await contract.getBet(market.betId);
+        setResolvedYes(Number(betInfo.yesVotes));
+        setResolvedNo(Number(betInfo.noVotes));
+      } catch (err) {
+        setResolvedYes(null);
+        setResolvedNo(null);
+      }
+    };
+    fetchResolvedTallies();
+  }, [contract, market.betId, market.status]);
+
   // Fetch claimable amount when claim modal opens
   useEffect(() => {
     const fetchClaimAmount = async () => {
@@ -131,18 +164,27 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
     const checkClaimEligibility = async () => {
       if (!contract || !address) {
         setCanClaimOnChain(false);
+        setYesWon(null);
         return;
       }
       try {
         // Check if user has any pending withdrawals
         const pendingAmount = await contract.pendingWithdrawals(address);
         setCanClaimOnChain(Number(pendingAmount) > 0);
+        // Fetch yesWon from contract if resolved
+        if (market.status === 'resolved') {
+          const betInfo = await contract.getBet(market.betId);
+          setYesWon(Boolean(betInfo.yesWon));
+        } else {
+          setYesWon(null);
+        }
       } catch (err) {
         setCanClaimOnChain(false);
+        setYesWon(null);
       }
     };
     checkClaimEligibility();
-  }, [contract, address, showClaimModal]);
+  }, [contract, address, showClaimModal, market.status, market.betId]);
 
   // Card content
   const cardContent = (
@@ -173,7 +215,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
             <span className={`px-2 py-0.5 rounded text-xs bg-orange-500 text-white`}>
               {userVote.option === 'yes' ? 'YES' : userVote.option === 'no' ? 'NO' : 'N/A'}
             </span>
-            <span className="text-xs opacity-75">({userVote.amount} TCENT)</span>
+            <span className="text-xs opacity-75">({formatEthFromWei(userVote.amount)} ETH)</span>
           </div>
         </div>
       )}
@@ -189,14 +231,34 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
         </div>
         <div className="flex items-center justify-end gap-2 bg-mint-50 rounded-lg px-2 py-1">
           <FaCoins className="text-mint-500" />
-          {firestoreTotalStake} TCENT
+          {formatEthFromWei(firestoreTotalStake)} ETH
           <FaCheckCircle className="text-orange-500 text-2xl ml-2" />
         </div>
       </div>
-      {/* Progress bar - hide real values unless resolved */}
+      {/* Progress bar - always show both Yes and No after resolved */}
       <div className="px-6 my-4">
         <div className="relative w-full h-10 rounded-lg bg-gray-200 flex overflow-hidden">
-          {(!isResolved) ? (
+          {isResolved && resolvedYes !== null && resolvedNo !== null ? (() => {
+            const total = resolvedYes + resolvedNo;
+            const yesPct = total ? Math.round((resolvedYes / total) * 100) : 0;
+            const noPct = total ? 100 - yesPct : 0;
+            return (
+              <>
+                <div
+                  className="h-full flex items-center justify-start pl-4 font-bold text-base transition-all select-none"
+                  style={{ width: `${yesPct}%`, backgroundColor: '#2de3b6', color: 'white' }}
+                >
+                  Yes: {resolvedYes / 1e18} ({yesPct}%)
+                </div>
+                <div
+                  className="h-full flex items-center justify-end pr-4 font-bold text-base transition-all select-none"
+                  style={{ width: `${noPct}%`, backgroundColor: '#ff7a1a', color: 'white' }}
+                >
+                  No: {resolvedNo / 1e18} ({noPct}%)
+                </div>
+              </>
+            );
+          })() : (
             <>
               <div
                 className="h-full flex items-center justify-start pl-4 font-bold text-base transition-all select-none"
@@ -210,25 +272,6 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
               >
                 No: 0 (0%)
               </div>
-            </>
-          ) : (
-            <>
-              {onChainYesPct > 0 && (
-                <div
-                  className="h-full flex items-center justify-start pl-4 font-bold text-base transition-all select-none"
-                  style={{ width: `${onChainYesPct}%`, backgroundColor: '#2de3b6', color: 'white' }}
-                >
-                  Yes: {onChainYes} ({onChainYesPct}%)
-                </div>
-              )}
-              {onChainNoPct > 0 && (
-                <div
-                  className="h-full flex items-center justify-end pr-4 font-bold text-base transition-all select-none"
-                  style={{ width: `${onChainNoPct}%`, backgroundColor: '#ff7a1a', color: 'white' }}
-                >
-                  No: {onChainNo} ({onChainNoPct}%)
-                </div>
-              )}
             </>
           )}
         </div>
@@ -251,10 +294,10 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
             className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition bg-gray-200 text-gray-400 cursor-not-allowed"
             disabled
           >
-            You have already voted
+             voted
           </button>
         ) : null}
-        {isExpired && !isResolved ? (
+        {isExpired && !isResolved && address === market.creator ? (
           <button
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer disabled:opacity-60"
             disabled={!contract || votePending}
@@ -262,8 +305,10 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
               e.stopPropagation();
               setVotePending(true);
               try {
-                await contract.resolveBet(market.betId);
-                // Update Firestore market status to 'resolved'
+                // Use ABI from BeliefMarketFHE.json
+                const contractWithABI = new ethers.Contract(contract.address, BeliefMarketABI.abi, signer);
+                await contractWithABI.requestTallyReveal(market.betId);
+                // Immediately update Firestore market status to 'resolved'
                 if (market.id) {
                   const { db } = await import('../firebase');
                   const { doc, updateDoc } = await import('firebase/firestore');
@@ -278,24 +323,31 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
           >
             {votePending ? 'Resolving...' : 'Resolve'}
           </button>
-        ) : isResolved && canClaimOnChain && (
-          // Show claim if user has pending withdrawals
+        ) : isExpired && !isResolved ? (
           <button
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
-            onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
+            className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition bg-gray-200 text-gray-400 cursor-not-allowed"
+            disabled
           >
-            Claim
+            Only creator can resolve
           </button>
-        )}
-        {/* Show closed button for resolved bets if user cannot claim */}
-        {isResolved && !canClaimOnChain && (
+        ) : isResolved && canClaimOnChain && userVote ? (
+          // Show claim if user has pending withdrawals and user voted for the winning side
+          ((yesWon === true && userVote.option === 'yes') || (yesWon === false && userVote.option === 'no')) ? (
+            <button
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
+              onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
+            >
+              Claim
+            </button>
+          ) : null
+        ) : isResolved && !canClaimOnChain ? (
           <button
             className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition bg-gray-300 text-gray-500 cursor-not-allowed"
             disabled
           >
             Closed
           </button>
-        )}
+        ) : null}
         {/* Share and Comments buttons */}
         <button
           className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition cursor-pointer"
@@ -383,34 +435,37 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                     setVotePending(false);
                     return;
                   }
-                  console.log('Voting with betId:', market.betId, 'amount:', market.minBet);
                   if (selectedOption && userAddress && !userVote) {
                     try {
-                      await contract.castVote(
-                        market.betId,
-                        selectedOption === "yes",
-                        { value: market.minBet }
-                      );
-                      await vote({
-                        marketId: market.id,
-                        user: userAddress,
-                        option: selectedOption,
-                        amount: market.minBet
+                      await castConfidentialVote({
+                        contractAddress: contract.address,
+                        abi: BeliefMarketABI.abi,
+                        betId: market.betId,
+                        marketId: market.id, // Pass the Firestore document ID
+                        voteType: selectedOption === 'yes' ? 1 : 0,
+                        voteStake: ethers.utils.parseEther(market.minBet.toString()).toString(),
+                        signer,
+                        setVoteStep: undefined, // or your UI step handler
+                        onCastVote: () => {
+                          setVoteSuccess(true);
+                          setVoteModalOpen(false);
+                          setSelectedOption("");
+                        }
                       });
-                      setVoteSuccess(true);
-                      setVoteModalOpen(false);
-                      setSelectedOption("");
-                    } catch (err: any) {
-                      console.error(err.message || "Failed to vote");
+                    } catch (err: unknown) {
+                      const error = err as Error;
+                      console.error(error.message || "Failed to vote");
                     }
                     setVotePending(false);
                   }
                 }}
               >
-                {votePending ? 'Voting...' : userVote ? 'You have already voted' : 'Vote'}
+                {votePending ? 'Voting...' : userVote ? ' voted' : 'Vote'}
               </button>
             )}
-            <div className="mt-4 text-xs text-gray-500 text-center">Voting amount: <span className="font-bold text-mint-700">{market.minBet} TCENT</span> (set by market creator)</div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              Voting amount: <span className="font-bold text-mint-700">{market.minBet} ETH</span> (set by market creator)
+            </div>
           </div>
         </div>
       )}
@@ -440,7 +495,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                 <span>Loading...</span>
               ) : claimAmount !== undefined ? (
                 claimAmount > 0 ? (
-                  <>You can withdraw: <span className="text-orange-500">{claimAmount} TCENT</span></>
+                  <>You can withdraw: <span className="text-orange-500">{formatEthFromWei(claimAmount)} ETH</span></>
                 ) : (
                   <span>No rewards available to withdraw.</span>
                 )

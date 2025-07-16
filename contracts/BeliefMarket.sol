@@ -34,7 +34,7 @@ contract BeliefMarketFHE is SepoliaConfig {
     address public owner;
 
     event BetCreated(string betId, address creator, uint256 stakeAmount, uint256 voteStake, uint256 expiryTime);
-    event VoteCast(string betId, address voter, uint8 voteType, uint256 amount);
+    event VoteCast(string betId);
     event BetResolved(string betId, bool yesWon, uint64 revealedYes, uint64 revealedNo, uint256 totalPrize);
     event PrizeDistributed(string betId, address winner, uint256 amount);
     event PlatformFeesWithdrawn(address indexed to, uint256 amount);
@@ -120,7 +120,7 @@ contract BeliefMarketFHE is SepoliaConfig {
 
         hasVoted[betId][msg.sender] = true;
         bet.prizePool += msg.value;
-        emit VoteCast(betId, msg.sender, voteType, msg.value);
+        emit VoteCast(betId);
     }
 
     // Request decryption of tallies after expiry
