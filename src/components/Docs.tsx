@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
-import { FaBook, FaArrowLeft, FaHome, FaSearch } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { FaBook, FaArrowLeft, FaSearch } from 'react-icons/fa';
 
 // Documentation content - we'll import the markdown files
 const docsContent = {
@@ -557,7 +557,6 @@ Conviction Markets addresses these problems through:
 
 const Docs: React.FC = () => {
   const { docId } = useParams<{ docId: string }>();
-  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Default to welcome if no docId

@@ -1,6 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaVoteYea, FaCheckCircle, FaComments, FaGavel, FaChartBar, FaShieldAlt, FaLock, FaBook } from 'react-icons/fa';
+import { FaUsers, FaVoteYea, FaCheckCircle, FaComments, FaGavel, FaChartBar, FaShieldAlt, FaLock } from 'react-icons/fa';
 
 const chatMessages = [
   {
@@ -90,7 +89,6 @@ const GlowBg = () => (
 );
 
 const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = ({ onCreate, onBrowse }) => {
-  const navigate = useNavigate();
   return (
     <>
       <section className="relative w-full min-h-[70vh] flex flex-col items-center justify-center bg-gradient-to-br from-mint-200 via-white to-orange-100 py-20 px-4 rounded-lg shadow-2xl mt-8 overflow-hidden overflow-x-hidden">
