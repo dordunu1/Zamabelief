@@ -18,14 +18,14 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <WagmiConfig config={config}>
-        <RainbowKitProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </RainbowKitProvider>
-      </WagmiConfig>
-    </QueryClientProvider>
+  <QueryClientProvider client={queryClient}>
+    <WagmiConfig config={config}>
+      <RainbowKitProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </RainbowKitProvider>
+    </WagmiConfig>
+  </QueryClientProvider>
   </ErrorBoundary>
 );

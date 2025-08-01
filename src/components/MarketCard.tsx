@@ -375,7 +375,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
       </div>
       {/* Action row below progress bar */}
       <div className="px-6 pb-4 flex flex-row gap-2 items-center">
-        {/* Voting button logic fix */}
+        {/* Betting button logic fix */}
         {market.status === 'active' && address && !userVote ? (
           <button
             className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition cursor-pointer"
@@ -384,14 +384,14 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
             onMouseOut={e => (e.currentTarget.style.background = '#2de3b6')}
             onClick={e => { e.stopPropagation(); setVoteModalOpen(true); }}
           >
-            Place Prediction
+            Place Bet
           </button>
         ) : market.status === 'active' && address && userVote ? (
           <button
             className="flex-1 font-bold px-4 py-2 rounded-lg shadow-lg transition bg-gray-200 text-gray-400 cursor-not-allowed"
             disabled
           >
-             voted
+             Bet Placed
           </button>
         ) : null}
         {isExpired && !isResolved && address === market.creator ? (
@@ -428,13 +428,13 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
           </button>
         ) : null}
         {isResolved && !isTie && userVote && ((yesWon === true && userVote.option === 'yes') || (yesWon === false && userVote.option === 'no')) && (
-          <button
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
-            onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
+            <button
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition cursor-pointer"
+              onClick={e => { e.stopPropagation(); setShowClaimModal(true); }}
             disabled={claiming || hasClaimed}
-          >
+            >
             {hasClaimed ? 'Claimed' : claiming ? 'Claiming...' : 'Claim'}
-          </button>
+            </button>
         )}
         {isResolved && isTie && userVote && (
           <button
@@ -484,12 +484,12 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
           </div>
         </div>
       )}
-      {/* Voting Modal */}
+      {/* Betting Modal */}
       {voteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setVoteModalOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm relative" onClick={e => e.stopPropagation()}>
             <button className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold" onClick={() => setVoteModalOpen(false)}>&times;</button>
-            <h2 className="text-xl font-bold text-mint-700 mb-6 text-center">Place Your Prediction</h2>
+            <h2 className="text-xl font-bold text-mint-700 mb-6 text-center">Place Your Bet</h2>
             <div className="flex flex-col gap-4 mb-6">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -559,11 +559,11 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
                   }
                 }}
               >
-                {votePending ? (voteStep === 'initializing' ? 'Initializing...' : 'Voting...') : userVote ? ' voted' : 'Vote'}
+                {votePending ? (voteStep === 'initializing' ? 'Encrypting...' : 'Betting...') : userVote ? ' Bet Placed' : 'Place Bet'}
               </button>
             )}
             <div className="mt-4 text-xs text-gray-500 text-center">
-              Voting amount: <span className="font-bold text-mint-700">{market.minBet} ETH</span> (set by market creator)
+              Betting amount: <span className="font-bold text-mint-700">{market.minBet} ETH</span> (set by market creator)
             </div>
           </div>
         </div>
@@ -573,7 +573,7 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
           <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm flex flex-col items-center">
             <div className="text-green-500 text-4xl mb-2">✓</div>
             <h2 className="text-xl font-bold mb-2 text-center">Transaction Sent!</h2>
-            <div className="text-gray-600 text-center mb-6">Your vote has been sent successfully. Please wait for the data to be updated on the next confirmed block!</div>
+            <div className="text-gray-600 text-center mb-6">Your bet has been sent successfully. Please wait for the data to be updated on the next confirmed block!</div>
             <button
               className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow text-lg"
               onClick={() => setVoteSuccess(false)}
@@ -592,19 +592,19 @@ const MarketCard: React.FC<MarketCardPropsWithWallet> = ({ market, votes, userAd
             <div className="text-center text-lg font-semibold mb-6">
               You can claim: {eligibleAmount} ETH
             </div>
-            <button
+              <button
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-lg transition cursor-pointer text-lg disabled:opacity-60 mb-2"
               disabled={claiming}
-              onClick={async () => {
+                  onClick={async () => {
                 if (isTie) {
                   await handleRefund();
-                } else {
+                      } else {
                   await handleClaim();
-                }
-              }}
-            >
+                    }
+                  }}
+                >
               {claiming ? 'Claiming...' : 'Confirm Claim'}
-            </button>
+                </button>
           </div>
         </div>
       )}

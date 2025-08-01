@@ -126,12 +126,12 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
               {msg.align === 'left' && (
                 <>
                   <span className="text-2xl select-none">{msg.avatar}</span>
-                  <div
+              <div
                     className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center ml-2 self-start w-fit`}
                     style={{ borderTopLeftRadius: '0.5rem', borderTopRightRadius: '2rem' }}
-                  >
-                    {msg.text}
-                  </div>
+              >
+                {msg.text}
+              </div>
                 </>
               )}
               {msg.align === 'right' && (
@@ -158,12 +158,12 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
               {msg.align === 'left' && (
                 <>
                   <span className="text-2xl select-none">{msg.avatar}</span>
-                  <div
+              <div
                     className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center ml-2 self-start w-fit`}
                     style={{ borderTopLeftRadius: '0.5rem', borderTopRightRadius: '2rem' }}
-                  >
-                    {msg.text}
-                  </div>
+          >
+                {msg.text}
+              </div>
                 </>
               )}
               {msg.align === 'right' && (
@@ -190,12 +190,12 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
               {msg.align === 'left' && (
                 <>
                   <span className="text-2xl select-none">{msg.avatar}</span>
-                  <div
+              <div
                     className={`rounded-2xl px-5 py-3 shadow-md ${msg.color} max-w-[75%] text-gray-800 text-base font-medium flex items-center ml-2 self-start w-fit`}
                     style={{ borderTopLeftRadius: '0.5rem', borderTopRightRadius: '2rem' }}
-                  >
-                    {msg.text}
-                  </div>
+          >
+                {msg.text}
+              </div>
                 </>
               )}
               {msg.align === 'right' && (
@@ -225,13 +225,13 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-w-[320px]">
             <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
               <FaLock className="text-orange-400 mb-2" size={32} />
-              <h4 className="font-bold text-orange-500 mb-1 text-center">Encrypted Voting</h4>
-              <p className="text-sm text-orange-500 text-center">Your vote is <b>encrypted</b> in your browser using ZAMA FHEVM.</p>
+              <h4 className="font-bold text-orange-500 mb-1 text-center">Encrypted Betting</h4>
+              <p className="text-sm text-orange-500 text-center">Your bet is <b>encrypted</b> in your browser using ZAMA FHEVM.</p>
             </div>
             <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
               <FaShieldAlt className="text-orange-400 mb-2" size={32} />
               <h4 className="font-bold text-orange-500 mb-1 text-center">On-Chain Privacy</h4>
-              <p className="text-sm text-orange-500 text-center">Encrypted votes are sent to the blockchain—no one (not even us) can see your choice.</p>
+              <p className="text-sm text-orange-500 text-center">Encrypted bets are sent to the blockchain—no one (not even us) can see your choice.</p>
             </div>
             <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 flex flex-col items-center shadow">
               <FaGavel className="text-orange-400 mb-2" size={32} />
@@ -250,7 +250,7 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
       <section className="w-full max-w-4xl mx-auto mt-12 mb-8 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
         <h2 className="text-2xl md:text-3xl font-bold text-mint-700 mb-4 text-center">A Home for DAOs & Communities to Settle Real Debates</h2>
         <div className="w-full flex flex-col md:flex-row gap-6 justify-center items-center mb-6">
-          <div className="flex items-center gap-3"><FaVoteYea className="text-mint-500 text-xl" /><span className="text-gray-700 text-base">Resolve governance questions with transparent voting.</span></div>
+          <div className="flex items-center gap-3"><FaVoteYea className="text-mint-500 text-xl" /><span className="text-gray-700 text-base">Resolve governance questions with transparent betting.</span></div>
           <div className="flex items-center gap-3"><FaChartBar className="text-orange-400 text-xl" /><span className="text-gray-700 text-base">Let your community stake conviction on outcomes.</span></div>
         </div>
         <div className="w-full flex flex-col md:flex-row gap-6 justify-center items-center mb-6">
@@ -281,7 +281,7 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
           </div>
           <div className="flex flex-col items-center">
             <FaUsers className="text-3xl text-mint-500 mb-2" />
-            <span className="font-semibold text-gray-700 mb-1">3. Community Votes</span>
+            <span className="font-semibold text-gray-700 mb-1">3. Community Bets</span>
             <span className="text-gray-500 text-sm text-center">Everyone participates, and the majority decides.</span>
           </div>
           <div className="flex flex-col items-center">
