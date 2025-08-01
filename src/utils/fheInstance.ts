@@ -12,7 +12,7 @@ export async function initializeFheInstance() {
   const config = { ...SepoliaConfig, network: window.ethereum };
   try {
     fheInstance = await createInstance(config);
-    console.log('FHEVM instance created:', fheInstance);
+
     return fheInstance;
   } catch (err) {
     console.error('FHEVM instance creation failed:', err);

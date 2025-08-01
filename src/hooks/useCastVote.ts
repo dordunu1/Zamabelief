@@ -28,7 +28,6 @@ export function useCastVote() {
       // Initialize FHEVM if not already initialized
       let fhe = getFheInstance();
       if (!fhe) {
-        console.log('Initializing FHEVM for voting...');
         if (setVoteStep) setVoteStep('initializing');
         fhe = await initializeFheInstance();
         if (setVoteStep) setVoteStep('ready');
@@ -39,28 +38,15 @@ export function useCastVote() {
       const userAddress = await signer.getAddress();
 
       // Encrypt the vote stake
-      console.log('Encrypting vote stake:', {
-        contractAddress: contractAddressChecksum,
-        userAddress,
-        voteStake,
-        voteType
-      });
       const ciphertext = await fhe.createEncryptedInput(contractAddressChecksum, userAddress);
       ciphertext.add64(BigInt(voteStake));
       const { handles, inputProof } = await ciphertext.encrypt();
       const encryptedHex = hexlify(handles[0]);
       const proofHex = hexlify(inputProof);
-      console.log('Encrypted vote:', { encryptedHex, proofHex });
 
       if (setVoteStep) setVoteStep('casting');
 
       // Call the contract's vote function
-      console.log('Calling contract.vote with:', {
-        betId,
-        encryptedHex,
-        voteType,
-        proofHex
-      });
       const contract = new ethers.Contract(contractAddressChecksum, abi, signer);
       const tx = await contract.vote(
         betId,

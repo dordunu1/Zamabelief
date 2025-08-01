@@ -1,11 +1,12 @@
 import React from 'react';
-import { FaUsers, FaVoteYea, FaCheckCircle, FaComments, FaGavel, FaChartBar, FaShieldAlt, FaLock } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaUsers, FaVoteYea, FaCheckCircle, FaComments, FaGavel, FaChartBar, FaShieldAlt, FaLock, FaBook } from 'react-icons/fa';
 
 const chatMessages = [
   {
     sender: 'Alex',
     avatar: '🧑',
-    text: "I still think our project will launch before the end of the month!",
+    text: "Hot take: Our project will launch before the end of the month!",
     align: 'left',
     color: 'bg-mint-100',
   },
@@ -19,7 +20,7 @@ const chatMessages = [
   {
     sender: 'Alex',
     avatar: '🧑',
-    text: "Let's settle this on Conviction Market! Winner takes the glory!",
+    text: "Let's settle this on Conviction Markets! Winner takes the glory!",
     align: 'left',
     color: 'bg-mint-100',
   },
@@ -29,21 +30,21 @@ const l2Chat = [
   {
     sender: 'Sam',
     avatar: '🧑‍💻',
-    text: "L2s will take over Ethereum! Cheap, fast, and scalable!",
+    text: "Hot take: L2s will take over Ethereum! Cheap, fast, and scalable!",
     align: 'left',
     color: 'bg-mint-100',
   },
   {
     sender: 'Priya',
     avatar: '👩‍🔬',
-    text: "L1s are here to stay. Security and decentralization matter most!",
+    text: "Controversial opinion: L1s are here to stay. Security and decentralization matter most!",
     align: 'right',
     color: 'bg-orange-100',
   },
   {
     sender: 'Sam',
     avatar: '🧑‍💻',
-    text: "Let's settle this on Belief Protocol! Winner takes the glory!",
+    text: "Let's settle this on Conviction Markets! Winner takes the glory!",
     align: 'left',
     color: 'bg-mint-100',
   },
@@ -53,14 +54,14 @@ const sportsChat = [
   {
     sender: 'Chris',
     avatar: '⚽',
-    text: "Messi is the GOAT! No one comes close!",
+    text: "Hot take: Messi is the GOAT! No one comes close!",
     align: 'left',
     color: 'bg-mint-100',
   },
   {
     sender: 'Alex',
     avatar: '🏆',
-    text: "Ronaldo is the real king! Check the stats!",
+    text: "Controversial opinion: Ronaldo is the real king! Check the stats!",
     align: 'right',
     color: 'bg-orange-100',
   },
@@ -74,7 +75,7 @@ const sportsChat = [
   {
     sender: 'Alex',
     avatar: '🏆',
-    text: "Only on Belief Protocol!",
+    text: "Only on Conviction Markets!",
     align: 'right',
     color: 'bg-orange-100',
   },
@@ -89,6 +90,7 @@ const GlowBg = () => (
 );
 
 const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = ({ onCreate, onBrowse }) => {
+  const navigate = useNavigate();
   return (
     <>
       <section className="relative w-full min-h-[70vh] flex flex-col items-center justify-center bg-gradient-to-br from-mint-200 via-white to-orange-100 py-20 px-4 rounded-lg shadow-2xl mt-8 overflow-hidden overflow-x-hidden">
@@ -97,7 +99,7 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
           Welcome to Conviction Markets
         </h1>
         <p className="text-lg md:text-xl text-gray-700 mb-8 text-center max-w-2xl">
-          Create and participate in belief markets where outcomes are decided by community conviction. Stake your belief, join the vote, and help shape the future—one conviction at a time.
+          Create and participate in opinion markets where hot takes, beliefs, and predictions are settled by community conviction. Stake your opinion, back your takes, and help shape the future—one conviction at a time.
         </p>
         {/* Prominent Action Buttons - now above chat messages */}
         <div className="w-full flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
@@ -250,7 +252,7 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
       <section className="w-full max-w-4xl mx-auto mt-12 mb-8 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
         <h2 className="text-2xl md:text-3xl font-bold text-mint-700 mb-4 text-center">A Home for DAOs & Communities to Settle Real Debates</h2>
         <div className="w-full flex flex-col md:flex-row gap-6 justify-center items-center mb-6">
-          <div className="flex items-center gap-3"><FaVoteYea className="text-mint-500 text-xl" /><span className="text-gray-700 text-base">Resolve governance questions with transparent betting.</span></div>
+          <div className="flex items-center gap-3"><FaVoteYea className="text-mint-500 text-xl" /><span className="text-gray-700 text-base">Settle hot takes and controversial opinions with transparent betting.</span></div>
           <div className="flex items-center gap-3"><FaChartBar className="text-orange-400 text-xl" /><span className="text-gray-700 text-base">Let your community stake conviction on outcomes.</span></div>
         </div>
         <div className="w-full flex flex-col md:flex-row gap-6 justify-center items-center mb-6">
@@ -276,12 +278,12 @@ const LandingHero: React.FC<{ onCreate: () => void; onBrowse: () => void; }> = (
           </div>
           <div className="flex flex-col items-center">
             <FaVoteYea className="text-3xl text-orange-400 mb-2" />
-            <span className="font-semibold text-gray-700 mb-1">2. Stake Your Belief</span>
-            <span className="text-gray-500 text-sm text-center">Place your conviction on the outcome you believe in.</span>
+            <span className="font-semibold text-gray-700 mb-1">2. Back Your Take</span>
+            <span className="text-gray-500 text-sm text-center">Stake your conviction on the opinion you believe in.</span>
           </div>
           <div className="flex flex-col items-center">
             <FaUsers className="text-3xl text-mint-500 mb-2" />
-            <span className="font-semibold text-gray-700 mb-1">3. Community Bets</span>
+            <span className="font-semibold text-gray-700 mb-1">3. Community Opinions</span>
             <span className="text-gray-500 text-sm text-center">Everyone participates, and the majority decides.</span>
           </div>
           <div className="flex flex-col items-center">

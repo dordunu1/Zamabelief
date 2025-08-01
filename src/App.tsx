@@ -5,11 +5,13 @@ import { ethers } from 'ethers';
 import LandingHero from './components/LandingHero';
 import CreateMarketModal from './components/CreateMarketModal';
 import MarketList from './components/MarketList';
-import { FaGavel, FaChartBar, FaBolt, FaMedal } from 'react-icons/fa';
+import { FaGavel, FaChartBar, FaBolt, FaMedal, FaBook } from 'react-icons/fa';
 import { useCreateMarket } from './hooks/useCreateMarket';
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import ActivityFeed from './components/ActivityFeed';
 import Leaderboard from './components/Leaderboard';
+import Docs from './components/Docs';
+import HeaderMarkets from './components/HeaderMarkets';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, } from 'wagmi';
 
@@ -55,6 +57,7 @@ export { ErrorBoundary };
 function App() {
   // Remove all custom wallet state/logic
   const { address: userAddress, isConnected } = useAccount();
+  const navigate = useNavigate();
  
   // Remove these lines that cause mobile crashes
   // const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -136,6 +139,8 @@ function App() {
           } />
           <Route path="/activities" element={<ActivityFeed />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/docs/:docId" element={<Docs />} />
           <Route path="*" element={<Navigate to="/markets" replace />} />
         </Routes>
       </div>
@@ -150,7 +155,18 @@ function App() {
           <FaGavel className="text-orange-500 text-xl sm:text-2xl drop-shadow" />
           <span className="text-lg sm:text-2xl font-extrabold text-mint-700 tracking-tight drop-shadow-sm">Conviction App</span>
         </div>
+        <HeaderMarkets />
         <div className="flex gap-1 sm:gap-2 items-center">
+          <button
+            onClick={() => {
+              setShowLanding(false);
+              navigate('/docs');
+            }}
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition text-sm font-semibold"
+          >
+            <FaBook className="text-sm" />
+            <span>Read Docs</span>
+          </button>
           <ConnectButton showBalance={false} accountStatus="address" />
         </div>
       </header>
