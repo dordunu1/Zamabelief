@@ -159,10 +159,9 @@ function App() {
         <div className="flex gap-1 sm:gap-2 items-center">
           <button
             onClick={() => {
-              setShowLanding(false);
               navigate('/docs');
             }}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition text-sm font-semibold"
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition text-sm font-semibold cursor-pointer"
           >
             <FaBook className="text-sm" />
             <span>Read Docs</span>
@@ -172,7 +171,7 @@ function App() {
       </header>
       {/* Add padding top to main content to avoid overlap with fixed header */}
       <div className="flex flex-col items-center min-h-screen w-full bg-gray-50 p-2 sm:p-4 pt-16 sm:pt-20 overflow-x-hidden">
-        {showLanding ? (
+        {showLanding && location.pathname === '/' ? (
           <LandingHero
             onCreate={async () => {
               if (!userAddress || !isConnected) {
@@ -186,7 +185,10 @@ function App() {
               }
               setShowCreateModal(true);
             }}
-            onBrowse={() => setShowLanding(false)}
+            onBrowse={() => {
+              setShowLanding(false);
+              navigate('/markets');
+            }}
           />
         ) : (
           <MainContent />
