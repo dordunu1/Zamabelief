@@ -157,15 +157,6 @@ function App() {
         </div>
         <HeaderMarkets />
         <div className="flex gap-1 sm:gap-2 items-center">
-          <button
-            onClick={() => {
-              navigate('/docs');
-            }}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition text-sm font-semibold cursor-pointer"
-          >
-            <FaBook className="text-sm" />
-            <span>Read Docs</span>
-          </button>
           <ConnectButton showBalance={false} accountStatus="address" />
         </div>
       </header>
@@ -214,6 +205,16 @@ function App() {
           <div className="text-red-600 text-sm text-center">{error}</div>
         )}
       </div>
+      {/* Fixed Read Docs button in lower right corner */}
+      <button
+        onClick={() => {
+          navigate('/docs');
+        }}
+        className="fixed bottom-6 right-6 bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-50 flex items-center gap-2 hover:scale-105"
+      >
+        <FaBook className="text-lg" />
+        <span className="font-semibold">Read Docs</span>
+      </button>
       <Modal
         isOpen={modalData !== null} 
         onClose={() => setModalData(null)} 

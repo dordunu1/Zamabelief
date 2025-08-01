@@ -59,7 +59,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [expiry, setExpiry] = useState(EXPIRY_OPTIONS[0].value);
-  const [minBet, setMinBet] = useState(50);
+  const [minBet, setMinBet] = useState(0.02);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -123,7 +123,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
       setTitle('');
       setDescription('');
       setExpiry(EXPIRY_OPTIONS[0].value);
-      setMinBet(50);
+      setMinBet(0.02);
       setError('');
     } catch (err: any) {
       setError(getFriendlyErrorMessage(err));
@@ -150,7 +150,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
           {walletError && <div className="text-red-500 mb-2">{walletError}</div>}
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 text-2xl font-bold absolute top-4 right-4"
+            className="text-gray-400 hover:text-gray-700 text-2xl font-bold absolute top-4 right-4 cursor-pointer"
           >×</button>
         </div>
       </div>
@@ -166,7 +166,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold cursor-pointer"
         >
           ×
         </button>
