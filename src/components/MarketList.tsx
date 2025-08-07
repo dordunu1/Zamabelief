@@ -65,7 +65,7 @@ const MarketList: React.FC<MarketListProps> = ({ userAddress, address, signer, c
         {TABS.map(tab => (
           <button
             key={tab.value}
-            className={`px-4 py-2 rounded-lg font-bold text-base transition-all ${activeTab === tab.value ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-600'}`}
+            className={`px-4 py-2 rounded-lg font-bold text-base transition-all cursor-pointer ${activeTab === tab.value ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-600'}`}
             onClick={() => setActiveTab(tab.value as 'active' | 'resolved')}
           >
             {tab.label}

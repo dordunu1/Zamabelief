@@ -99,19 +99,19 @@ function App() {
           <div className="flex gap-1 sm:gap-4 overflow-x-auto">
             <Link
               to="/markets"
-              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-t-lg font-bold text-sm sm:text-base transition-all whitespace-nowrap ${path === '/markets' ? 'bg-white shadow text-mint-700' : 'bg-gray-100 text-gray-400 hover:text-mint-600'} cursor-pointer`}
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-t-lg font-bold text-sm sm:text-base transition-all whitespace-nowrap cursor-pointer ${path === '/markets' ? 'bg-white shadow text-mint-700' : 'bg-gray-100 text-gray-400 hover:text-mint-600'}`}
             >
               <FaChartBar className="text-base sm:text-lg" /> <span className="hidden sm:inline">Markets</span>
             </Link>
             <Link
               to="/activities"
-              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-t-lg font-bold text-sm sm:text-base transition-all whitespace-nowrap ${path === '/activities' ? 'bg-white shadow text-mint-700' : 'bg-gray-100 text-gray-400 hover:text-mint-600'} cursor-pointer`}
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-t-lg font-bold text-sm sm:text-base transition-all whitespace-nowrap cursor-pointer ${path === '/activities' ? 'bg-white shadow text-mint-700' : 'bg-gray-100 text-gray-400 hover:text-mint-600'}`}
             >
               <FaBolt className="text-base sm:text-lg" /> <span className="hidden sm:inline">Activities</span>
             </Link>
             <Link
               to="/leaderboard"
-              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-t-lg font-bold text-sm sm:text-base transition-all whitespace-nowrap ${path === '/leaderboard' ? 'bg-white shadow text-mint-700' : 'bg-gray-100 text-gray-400 hover:text-mint-600'} cursor-pointer`}
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-t-lg font-bold text-sm sm:text-base transition-all whitespace-nowrap cursor-pointer ${path === '/leaderboard' ? 'bg-white shadow text-mint-700' : 'bg-gray-100 text-gray-400 hover:text-mint-600'}`}
             >
               <FaMedal className="text-base sm:text-lg" /> <span className="hidden sm:inline">Leaderboard</span>
             </Link>

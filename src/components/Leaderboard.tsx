@@ -57,13 +57,18 @@ const Leaderboard: React.FC = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-8">
-      <div className="bg-white rounded-xl shadow-md overflow-x-auto">
-        <table className="min-w-full text-left">
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <table className="w-full text-left">
           <thead>
-            <tr className="border-b">
-              <th className="py-3 px-4">Rank</th>
-              <th className="py-3 px-4">User</th>
-              <th className="py-3 px-4">Votes</th>
+            <tr className="border-b border-gray-200">
+              <th className="py-4 px-4 text-left font-bold text-gray-700">Rank</th>
+              <th className="py-4 px-4 text-left font-bold text-gray-700">User</th>
+              <th className="py-4 px-4 text-left font-bold flex items-center gap-2 text-orange-600">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                Bets
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -83,19 +88,45 @@ const Leaderboard: React.FC = () => {
                 {leaders.map((u, i) => (
                   <motion.tr
                     key={u.address}
-                    className={`border-b ${i < 3 ? 'bg-mint-50' : ''}`}
+                    className={`border-b border-gray-100 ${i < 3 ? 'bg-mint-50' : ''}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     layout
                   >
-                    <td className="py-3 px-4 font-bold text-lg text-mint-600">{(page - 1) * PAGE_SIZE + i + 1}</td>
-                    <td className="py-3 px-4 flex items-center gap-3">
+                    <td className="py-4 px-4 font-bold text-lg text-mint-600">
+                                              <div className="flex items-center gap-2">
+                          {i === 0 ? (
+                            <span className="text-yellow-500 text-xl">🥇</span>
+                          ) : i === 1 ? (
+                            <span className="text-gray-400 text-xl">🥈</span>
+                          ) : i === 2 ? (
+                            <span className="text-orange-500 text-xl">🥉</span>
+                          ) : i === 3 ? (
+                            <span className="text-blue-500 text-xl">4️⃣</span>
+                          ) : i === 4 ? (
+                            <span className="text-purple-500 text-xl">5️⃣</span>
+                          ) : (
+                            <span>{(page - 1) * PAGE_SIZE + i + 1}</span>
+                          )}
+                        </div>
+                    </td>
+                    <td className="py-4 px-4 flex items-center gap-3">
                       <img src={getDiceBearUrl(u.address)} alt="avatar" className="w-8 h-8 rounded-full border border-mint-200" />
                       <span className="font-mono text-sm">{shortAddr(u.address)}</span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="bg-orange-500 text-white px-3 py-1 rounded-full font-bold text-xs">{u.votes} votes</span>
+                      <span className={`px-4 py-2 rounded-full font-bold text-sm shadow-lg transform hover:scale-105 transition-transform duration-200 ${
+                        i === 0 
+                          ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' 
+                          : i === 1 
+                          ? 'bg-gradient-to-r from-gray-300 to-gray-500 text-white' 
+                          : i === 2 
+                          ? 'bg-gradient-to-r from-orange-400 to-orange-600 text-white' 
+                          : 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+                      }`}>
+                        {u.votes} bets
+                      </span>
                     </td>
                   </motion.tr>
                 ))}
