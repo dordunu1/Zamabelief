@@ -151,7 +151,7 @@ contract BeliefMarketFHE is SepoliaConfig {
         bytes[] memory signatures
     ) external {
         emit DebugCallbackStep("callback_entered", "");
-        // FHE.checkSignatures(requestId, signatures); // Uncomment for production
+        FHE.checkSignatures(requestId, signatures);
         string memory betId = betIdByRequestId[requestId];
         emit DebugCallbackStep("bet_found", betId);
         BetInfo storage bet = bets[betId];
