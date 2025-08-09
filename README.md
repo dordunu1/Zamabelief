@@ -43,11 +43,6 @@ A decentralized platform for opinion markets, hot takes, and belief-based bettin
 - **Contract Development**: Hardhat 2.25.0
 - **FHE Client**: ZAMA fhevm-core libraries
 
-### **Backend & Database**
-- **Real-time Database**: Firebase Firestore 11.9.1
-- **Social Features**: Comments, activity feeds, leaderboards
-- **Authentication**: Wallet-based authentication
-- **File Storage**: Firebase Storage for metadata
 
 ## 🏃‍♂️ Quick Start
 
